@@ -1,0 +1,10 @@
+---
+# tasks file for helm repo
+
+  - name: Create helm repo folder
+    shell: "mkdir helm-repo"
+
+  - name: Copying helm chart folder to K8s Master or Worker Node
+    copy:
+        src: "backend-helm"
+        dest: /home/vagrant/helm-repo/

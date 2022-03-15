@@ -1,0 +1,24 @@
+---
+# tasks file for mysql
+
+  - name: Copying MySQL files to K8s Master Node
+    copy:
+        src: "{{ item }}"
+        dest: /root/
+    loop:
+        - mysql.yml
+        - pvc_mysql.yml
+
+  - name: Creating directory over which MySQL container mounts the PersistentVolume at /var/lib/mysql.
+    file:
+        path: /mysqldata
+        state: directory
+
+  - name: Create secret for mysql root password
+    shell: "kubectl create secret generic mysql-secret --from-literal=password={{ mysql_root_pass }} -n {{ project }}"
+
+  - name: Configuration and Setup of MySQL
+    shell: "kubectl -n {{ project }} create -f /root/{{ item }}"
+    loop:
+        - mysql.yml
+        - pvc_mysql.yml

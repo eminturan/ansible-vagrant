@@ -1,0 +1,9 @@
+git_repo_url: "https://github.com/eminturan/python-example.git" #source code un bulunduğu repo
+project: "dev" #deploy edilecek ortam
+appName: "python-example" #servisin ismi
+
+#Kendi dockerhub bilgilerinize göre güncelleyiniz.
+docker_username: "username_giriniz"
+docker_password: "password_giriniz"
+image_url: "username_giriniz/example" #örnek, username/example
+image_version: "python1" #örnek, versiyon giriniz

@@ -1,0 +1,17 @@
+- hosts: k8smaster
+  remote_user: vagrant
+  gather_facts: no
+  vars_files:
+    - external_vars.yml
+  vars:
+    ansible_ssh_private_key_file: "/Users/macbook/.vagrant.d/insecure_private_key" #Localinizde "vagrant ssh-config k8s-m-1" komutunu çalıştırdığınızda "IdentityFile" parametresinin yanındaki path i yazınız
+
+  tasks:
+    - name: Source code download
+      shell: "rm -rf {{ appName }} && git clone {{ git_repo_url }}"
+
+    - name: Docker login, build and push
+      shell: "cd {{ appName }} && sudo docker login -u {{ docker_username }} -p {{ docker_password }} && sudo docker build -t {{ image_url }}:{{ image_version }} . && sudo docker push {{ image_url }}:{{ image_version }}"
+
+    - name: Helm deploy project
+      shell: "sudo helm upgrade -n {{ project }} --install {{ appName }} helm-repo/backend-helm -f {{ appName }}/values.yaml --set image.tag={{ image_version }} --set image.repository={{ image_url }}"

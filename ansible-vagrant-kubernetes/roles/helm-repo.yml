@@ -1,0 +1,4 @@
+- hosts: k8s-m-1
+  become: yes
+  roles:
+    - { role: helm-repo}

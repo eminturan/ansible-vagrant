@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  {{- with .Values.podAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    app: {{ .Values.repo.name }}
+  name: {{ .Values.repo.name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.repo.name }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        seccomp.security.alpha.kubernetes.io/pod: runtime/default
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Values.repo.name }}
+    spec:
+      {{- if .Values.serviceAccount.enabled }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- end }}
+      volumes:
+      {{- if .Values.appConfig.enabled }}
+      - configMap:
+          name: {{ .Values.repo.name }}-app-config
+        name: app-config-volume
+      {{- end }}
+      containers:
+        - env:
+            {{- with .Values.extraEnv }}
+            {{- tpl . $ | nindent 12 }}
+            {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
+          {{- if .Values.healthCheck.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.livenessProbe.httpGet.path }}
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.healthCheck.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.healthCheck.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.healthCheck.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.healthCheck.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.healthCheck.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.readinessProbe.httpGet.path }}
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.healthCheck.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.healthCheck.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.healthCheck.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.healthCheck.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.healthCheck.readinessProbe.failureThreshold }}
+          {{- end }}
+          volumeMounts:
+          {{- if .Values.appConfig.enabled }}
+          - mountPath: /app/config/application-configmap.yaml
+            name: app-config-volume
+            subPath: application-configmap.yaml
+          {{- end }}
+          securityContext: {}
+          name: {{ .Values.repo.name }}
+          resources:
+{{ toYaml .Values.resources | indent 12}}

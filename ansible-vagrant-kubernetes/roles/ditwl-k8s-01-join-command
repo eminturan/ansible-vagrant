@@ -1,0 +1,1 @@
+kubeadm join 192.168.50.11:6443 --token 6wl4bl.a7t7fktz318gvmx5 --discovery-token-ca-cert-hash sha256:6541766a7dc5d2e33e748dcc28aa83de640e8d1b6998c948618fdec9edc23c80 
