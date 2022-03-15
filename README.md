@@ -71,3 +71,5 @@ kubectl get svc -n dev
 ```
 
 Output:
+
+![Arc](https://github.com/eminturan/ansible-vagrant/blob/main/ui-output.png)
